@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>まいにちの調律 (Re-Me Tune) V22 - 五神＆七福神・神話アドバイス版</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --primary: #38bdf8;
+            --primary-dark: #0284c7;
+            --accent: #f43f5e;
+            --success: #10b981;
+            --gold: #d97706;
+            --gold-light: #fef3c7;
+            --border: #e2e8f0;
+            --purple: #a855f7;
+            --purple-light: #f3e8ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        header {
+            background: linear-gradient(135deg, #fef3c7 0%, #e0f2fe 100%, #f3e8ff 100%);
+            padding: 22px 20px;
+            text-align: center;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .badge-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
+        .moon-badge { background: #1e1b4b; color: #c084fc; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; box-shadow: 0 0 8px rgba(192, 132, 252, 0.4); }
+        .combo-badge { background: linear-gradient(45deg, #f43f5e, #f59e0b); color: white; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.3); animation: pulse 2s infinite; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        /* 五神スタンド（ヘッダー内） */
+        .gods-dashboard-title { font-size: 0.8rem; font-weight: bold; color: var(--text-sub); text-align: left; margin-bottom: 6px; padding-left: 4px; display: flex; justify-content: space-between; }
+        .gods-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
+        .god-mini-card { background: rgba(255, 255, 255, 0.8); border: 1px solid var(--border); border-radius: 10px; padding: 6px 2px; text-align: center; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; }
+        .god-mini-card.active-glow { background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-color: var(--gold); }
+        .god-mini-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+        .god-mini-name { font-weight: bold; display: block; }
+        .god-mini-lv { font-size: 0.65rem; color: #fff; background: var(--text-sub); padding: 0 4px; border-radius: 4px; display: inline-block; margin-top: 2px; }
+
+        /* 五神の神託（アドバイス吹き出し） */
+        .oracle-box { background: #fff; border: 1px solid #fcd34d; border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; text-align: left; position: relative; box-shadow: 0 4px 10px rgba(217, 119, 6, 0.04); }
+        .oracle-speaker { font-size: 0.8rem; font-weight: bold; color: var(--gold); display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+        .oracle-text { font-size: 0.82rem; line-height: 1.4; color: var(--text-main); font-weight: 500; }
+
+        .fortune-status { background: rgba(255, 255, 255, 0.6); border-radius: 10px; padding: 6px; margin-bottom: 12px; font-size: 0.8rem; font-weight: bold; color: var(--text-main); display: flex; justify-content: space-around; align-items: center; }
+
+        .total-time { font-size: 2.4rem; font-weight: bold; color: var(--primary-dark); margin: 2px 0; }
+        .stats-mini { display: flex; justify-content: space-around; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+
+        main { padding: 16px; flex: 1; padding-bottom: 40px; }
+        h2 { font-size: 1.05rem; color: var(--text-sub); margin-top: 22px; margin-bottom: 10px; border-left: 4px solid var(--gold); padding-left: 8px; }
+        .area-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .area-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .area-card:active { transform: scale(0.98); }
+        .area-card:hover { border-color: var(--primary); }
+        .area-header { display: flex; justify-content: space-between; align-items: center; }
+        .area-name { font-weight: bold; font-size: 1.05rem; }
+        
+        .god-badge { font-size: 0.72rem; background: #f1f5f9; color: var(--text-sub); padding: 4px 10px; border-radius: 20px; font-weight: 600; margin-top: 4px; display: inline-block; border: 1px solid transparent; line-height: 1.2; }
+        .god-badge.active { background: var(--gold-light); color: var(--gold); border: 1px solid #fcd34d; }
+        .god-badge.awakened { background: #fef08a; color: #854d0e; border: 1px solid #eab308; box-shadow: 0 0 8px rgba(234, 179, 8, 0.3); }
+
+        .area-stats-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+        .area-cumulative-text { font-size: 0.75rem; color: var(--text-sub); }
+        .area-points-text { font-size: 0.75rem; color: var(--accent); font-weight: bold; }
+        .area-gauge-text { font-size: 0.95rem; font-weight: bold; }
+
+        .gauge-container { background: #edf2f7; border-radius: 8px; height: 12px; width: 100%; overflow: hidden; }
+        .gauge-bar { height: 100%; background-color: var(--success); width: 0%; transition: width 0.5s ease-out; }
+
+        .report-section { background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+        .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-month { background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .report-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .report-summary-card { background: white; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .report-summary-val { font-size: 1.4rem; font-weight: bold; margin-top: 4px; }
+
+        .log-list { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
+        .log-item { background: white; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        .log-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-action { border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+        .btn-edit { background: #e0f2fe; color: #0369a1; }
+        .btn-delete { background: #fee2e2; color: #b91c1c; }
+
+        /* 五神詳細図鑑モーダル */
+        .god-detail-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 24px; z-index: 20; display: none; text-align: center; box-sizing: border-box; }
+        .god-detail-icon { font-size: 3.5rem; margin-bottom: 6px; display: inline-block; }
+        .god-detail-title { font-size: 1.25rem; font-weight: bold; margin-bottom: 4px; }
+        .god-detail-type { font-size: 0.75rem; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 12px; }
+        .god-detail-desc { text-align: left; font-size: 0.85rem; line-height: 1.5; color: var(--text-main); background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .btn-modal-close { background: var(--primary-dark); color: #fff; padding: 10px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        .action-panel { position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: white; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); border-top-left-radius: 24px; border-top-right-radius: 24px; transition: bottom 0.3s ease-out; padding: 24px; box-sizing: border-box; z-index: 10; max-height: 90vh; overflow-y: auto; }
+        .action-panel.open { bottom: 0; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-close { background: #edf2f7; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 6px; font-weight: bold; }
+        input[type="text"], input[type="date"], input[type="time"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+        .btn-time { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; padding: 10px 2px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem; text-align: center; transition: all 0.1s; }
+        .btn-time:active { transform: scale(0.95); background: #bae6fd; }
+
+        .time-stepper-container { display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 8px; gap: 12px; margin-bottom: 15px; }
+        .btn-step { width: 40px; height: 40px; border-radius: 50%; border: none; background: white; font-size: 1.3rem; font-weight: bold; color: var(--primary-dark); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+        .btn-step:active { transform: scale(0.92); background: #edf2f7; }
+        .btn-reset { background: #fee2e2; color: #ef4444; font-size: 0.9rem; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .btn-reset:active { transform: scale(0.95); }
+        .current-time-display { font-size: 1.4rem; font-weight: bold; color: var(--primary-dark); min-width: 90px; text-align: center; }
+
+        .sync-notice { background: #f3e8ff; border: 1px dashed #a855f7; color: #6b21a8; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; display: none; text-align: center; }
+        .moon-bonus-notice { background: #fef3c7; border: 1px dashed #d97706; color: #92400e; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; display: none; text-align: center; }
+
+        .btn-submit { background: var(--primary-dark); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: none; z-index: 5; }
+        .overlay.open { display: block; }
+        .overlay.ritual-open { z-index: 15; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div class="badge-row">
+            <div id="moon-status-badge" class="moon-badge" style="display:none;"></div>
+            <div id="combo-status-badge" class="combo-badge" style="display:none;">🔥 0 日連続調律!</div>
+        </div>
+
+        <div class="gods-dashboard-title">
+            <span>🔮 おうちを護る「五行の神獣」</span>
+            <span style="font-size:0.65rem; font-weight:normal; color:var(--text-sub);">タップで図鑑を確認</span>
+        </div>
+        <div id="gods-grid-container" class="gods-grid">
+            </div>
+
+        <div class="oracle-box">
+            <div id="oracle-speaker" class="oracle-speaker">🐉 青龍の神託</div>
+            <div id="oracle-text" class="oracle-text">「空間の調律を始めよう。まずは布類を整え、新しい風の通り道を作るのだ。」</div>
+        </div>
+
+        <div class="fortune-status">
+            <div>⛩️ 結界稼働: <span id="active-gods-count" style="color:var(--gold);">0</span> / 12箇所</div>
+            <div>✨ 総合倍率: <span id="fortune-multiplier" style="color:var(--primary-dark); font-size:1rem;">1.0</span>倍</div>
+        </div>
+        
+        <span style="color: var(--text-sub); font-size: 0.8rem; font-weight: bold;">今月の総調律時間</span>
+        <div class="total-time"><span id="total-minutes">0</span> <span style="font-size: 1.1rem;">分</span></div>
+        <div class="stats-mini">
+            <div>手放した無駄: <strong id="total-items" style="color:var(--accent);">0</strong> 個</div>
+            <div>調律回数: <strong id="total-count">0</strong> 回</div>
+        </div>
+    </header>
+
+    <main>
+        <h2>調律レポート（マンスリー履歴）</h2>
+        <div class="report-section">
+            <div class="month-selector">
+                <button class="btn-month" onclick="changeMonth(-1)">◀ 前月</button>
+                <span id="current-month-display" style="font-weight: bold; font-size: 1.1rem;">2026年6月</span>
+                <button class="btn-month" onclick="changeMonth(1)">次月 ▶</button>
+            </div>
+            
+            <div class="report-summary-grid">
+                <div class="report-summary-card">
+                    <span style="font-size:0.75rem; color:var(--text-sub);">この月の調律</span>
+                    <div id="report-month-time" class="report-summary-val">0 分</div>
+                </div>
+                <div class="report-summary-card">
+                    <span style="font-size:0.75rem; color:var(--text-sub);">手放した無駄</span>
+                    <div id="report-month-items" class="report-summary-val" style="color:var(--accent);">0 個</div>
+                </div>
+            </div>
+
+            <div id="log-list-container" class="log-list"></div>
+        </div>
+
+        <h2>調律エリア（100%超えで結界最大⚡）</h2>
+        <div id="area-list-container" class="area-list"></div>
+    </main>
+
+    <div id="god-detail-modal" class="god-detail-modal">
+        <div id="md-icon" class="god-detail-icon">🐉</div>
+        <div id="md-title" class="god-detail-title">青龍</div>
+        <div><span id="md-type" class="god-detail-type">木属性</span></div>
+        <div id="md-desc" class="god-detail-desc">説明</div>
+        <button class="btn-modal-close" onclick="closeGodDetail()">閉じる</button>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="closePanel()"></div>
+
+    <div id="action-panel" class="action-panel">
+        <div class="panel-header">
+            <h3 id="panel-title" style="margin: 0; font-size: 1.2rem;">エリアの調律</h3>
+            <button class="btn-close" onclick="closePanel()">閉じる</button>
+        </div>
+        
+        <div id="sync-notice-box" class="sync-notice">🎯 開運シンクロ時間帯！調律効果 1.5倍⚡</div>
+        <div id="moon-bonus-box" class="moon-bonus-notice">🔮 特別な月相の日！効果がブースト中！</div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label>📅 調律した日付</label>
+                <input type="date" id="input-date" onchange="onDateOrTimeChange()">
+            </div>
+            <div>
+                <label>🕒 時刻（何時ごろ？）</label>
+                <input type="time" id="input-time" onchange="onDateOrTimeChange()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>⏱️ タップで時間を加算（押すたびに累積されます）</label>
+            <div class="btn-grid">
+                <button class="btn-time" onclick="addPresetTime(1)">＋1分</button>
+                <button class="btn-time" onclick="addPresetTime(3)">＋3分</button>
+                <button class="btn-time" onclick="addPresetTime(5)">＋5分</button>
+                <button class="btn-time" onclick="addPresetTime(10)">＋10分</button>
+            </div>
+            
+            <label style="margin-top: 10px;">✨ 現在の選択時間（微調整とリセット）</label>
+            <div class="time-stepper-container">
+                <button class="btn-step" onclick="adjustTime(-1)">−</button>
+                <div id="current-time-counter" class="current-time-display">0 分</div>
+                <button class="btn-step" onclick="adjustTime(1)">＋</button>
+                <button class="btn-reset" onclick="resetTimeCounter()">↺ クリア</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>✨ ついでに手放した無駄（モノの名前）</label>
+            <input type="text" id="input-item-name" placeholder="例：着ない服、期限切れの調味料">
+        </div>
+
+        <button id="btn-submit" class="btn-submit" onclick="submitLog()">調律データを刻む ✨</button>
+    </div>
+</div>
+
+<script>
+    const now = new Date();
+    
+    const MOON_CALENDAR_2026 = {
+        newMoon: ['2026-01-18', '2026-02-17', '2026-03-19', '2026-04-17', '2026-05-16', '2026-06-15', '2026-07-14', '2026-08-13', '2026-09-11', '2026-10-10', '2026-11-09', '2026-12-09'],
+        fullMoon: ['2026-01-03', '2026-02-02', '2026-03-03', '2026-04-02', '2026-05-02', '2026-05-31', '2026-06-30', '2026-07-29', '2026-08-28', '2026-09-26', '2026-10-26', '2026-11-24', '2026-12-24']
+    };
+
+    // 信憑性のある五神データベース
+    const MYTH_GODS_DATABASE = {
+        wood: {
+            name: "青龍", element: "木 (東方)", icon: "🐉", color: "#22c55e",
+            desc: "「発展・成長・風通し」を司る聖獣。神道における志那都比古神（風の神）とも深く結びつく。衣類や布類は『木』の気を強く持つため、クローゼットやリビングを整えることで、古い執着を追い出し新鮮な縁とチャンスを呼び込みます。",
+            oracles: [
+                "「布類は『木』の気を宿す。着ない服を溜め込むのは、古い運気を停滞させる原因。クローゼットに『風路』を通すのだ。」",
+                "「リビングは家庭運の象徴。床にモノを置かないだけで、家族の間に健やかな風が回り始めるぞ。」",
+                "「寝室は一日の疲れをリセットし運気を吸収する聖域。枕元をスッキリさせ、青龍の加護を受けよ。」"
+            ]
+        },
+        fire: {
+            name: "朱雀", element: "火 (南方)", icon: "🦅", color: "#ef4444",
+            desc: "「情熱・知恵・代謝」を司る不死鳥。神道の迦具土神（火の神）の側面も持つ。悪いエネルギーを燃やし尽くし、インスピレーションを高める。キッチン（火を扱う場所）やデスクを調律することで、知恵と仕事運が劇的に向上します。",
+            oracles: [
+                "「キッチンは『火と水』が激突する空間。油汚れを放置すると、住む者の情熱が邪念へと変わり、出費がかさむぞ！」",
+                "「デスク（机上）は脳の鏡。不要な書類やゴミを手放すことで、直感力と仕事運が覚醒する。」",
+                "「コンロの焦げ付きは、五行では『悪い火』の象徴。ここを磨くことで、イライラが消え去り心に余裕が生まれるのだ。」"
+            ]
+        },
+        earth: {
+            name: "黄龍", element: "土 (中央)", icon: "🦁", color: "#eab308",
+            desc: "四神の中心に座し、すべての基盤となる「大地・豊穣・安定」を司る絶対的守護獣。神道では埴山姫神（土の神）に通じる。パントリーの備蓄や、おうちの『床・足元』を整えることで、人生の土台が安定し、豊かな富がじわじわと根付きます。",
+            oracles: [
+                "「パントリー（備蓄）は豊かさの貯蔵庫。賞味期限切れの食品は、土壌の栄養を腐らせる。感謝と共に手放すのだ。」",
+                "「『土』の気は足元から吸収される。床をピカピカに拭き清めることは、人生の土台（ライフライン）を強固にする儀式なり。」",
+                "「古い食材や調味料を溜め込まぬこと。常に『循環』を意識すれば、必要な豊かさは自然と舞い込んでくる。」"
+            ]
+        },
+        metal: {
+            name: "白虎", element: "金 (西方)", icon: "🐅", color: "#64748b",
+            desc: "「財運・良縁・魔除け」を司る神獣。金山彦神（金の神・鉱物の神）の鋭い結界能力を持つ。玄関はすべての運気の入り口。ここを白虎が睨みを利かせて守れるよう調律することで、外からの悪霊邪気を断切、本物の金運を呼び込みます。",
+            oracles: [
+                "「玄関は家全体の『顔』であり運気の入り口。靴が散乱していては、せっかくの吉運が白虎の門を潜れずに逃げてしまうぞ。」",
+                "「たたき（玄関の床）を水拭きせよ。外から持ち帰った厄を払い、白虎の魔除けの結界を10倍に跳ね上げるのだ。」",
+                "「玄関クローゼットに古い傘や、使わない外用具を放置するな。邪気の溜まり場となり、悪縁を引き寄せてしまう。」"
+            ]
+        },
+        water: {
+            name: "玄武", element: "水 (北方)", icon: "🐢", color: "#3b82f6",
+            desc: "「命の源泉・深い浄化・水に流す」を司る霊獣。密教では不浄を清める烏枢沙摩明王、神道では水波能売命とも深く関わる。トイレやお風呂などの水回りは伝統的に『陰の気』が溜まりやすいため、ここを清めることで金運と美、心の健康が手に入ります。",
+            oracles: [
+                "「水回りは感情と金運の源泉。トイレを美しく保つ者は、烏枢沙摩明王の功徳を得て、不浄の財が清らかな富へと変わる。」",
+                "「洗面所の鏡が曇っていると、自分自身の美意識と直感が曇る。水滴を拭き取り、本来の輝き（Re-Me）を取り戻せ。」",
+                "「排水口の詰まりは、人生の『滞り』そのもの。髪の毛やヌメリをサッと流し去ることで、人間関係の悩みも水に流れる。」"
+            ]
+        }
+    };
+
+    let appState = {
+        currentYear: now.getFullYear(),
+        currentMonth: now.getMonth() + 1,
+        currentSelectedAreaIndex: null,
+        editingLogId: null,
+        selectedTime: 0,
+        logs: [], 
+        // 各エリアに神獣と七福神をセットで定義
+        areas: [
+            { name: '🛋️ リビング', elementKey: 'wood', god: '青龍', luckyGod: '寿老人 (家庭円満)', gauge: 0, decreaseRatePerDay: 15, bestStart: 15, bestEnd: 17, bestText: '15:00-17:00 (申の刻)' },
+            { name: '🚪 リビングクローゼット', elementKey: 'wood', god: '青龍', luckyGod: '布袋尊 (整理発展)', gauge: 0, decreaseRatePerDay: 10, bestStart: 15, bestEnd: 17, bestText: '15:00-17:00 (申の刻)' },
+            { name: '🖥️ 机上', elementKey: 'fire', god: '朱雀', luckyGod: '寿老人 (知恵・直感)', gauge: 0, decreaseRatePerDay: 25, bestStart: 13, bestEnd: 15, bestText: '13:00-15:00 (未の刻)' },
+            { name: '🍳 キッチン', elementKey: 'fire', god: '朱雀', luckyGod: '大黒天 (五穀豊穣)', gauge: 0, decreaseRatePerDay: 25, bestStart: 7, bestEnd: 9, bestText: '07:00-09:00 (辰の刻)' },
+            { name: '🥫 パントリー', elementKey: 'earth', god: '黄龍', luckyGod: '恵比寿 (財の蓄積)', gauge: 0, decreaseRatePerDay: 15, bestStart: 7, bestEnd: 9, bestText: '07:00-09:00 (辰の刻)' },
+            { name: '🛏️ 寝室', elementKey: 'wood', god: '青龍', luckyGod: '福禄寿 (心身回復)', gauge: 0, decreaseRatePerDay: 10, bestStart: 21, bestEnd: 23, bestText: '21:00-23:00 (亥の刻)' },
+            { name: '👗 寝室クローゼット', elementKey: 'wood', god: '青龍', luckyGod: '布袋尊 (魅力・自己愛)', gauge: 0, decreaseRatePerDay: 10, bestStart: 21, bestEnd: 23, bestText: '21:00-23:00 (亥の刻)' },
+            { name: '👠 玄関', elementKey: 'metal', god: '白虎', luckyGod: '▼毘沙門天 (厄除開運)', gauge: 0, decreaseRatePerDay: 20, bestStart: 5, bestEnd: 7, bestText: '05:00-07:00 (卯の刻)' },
+            { name: '📦 玄関クローゼット', elementKey: 'metal', god: '白虎', luckyGod: '布袋尊 (悪縁断絶)', gauge: 0, decreaseRatePerDay: 10, bestStart: 5, bestEnd: 7, bestText: '05:00-07:00 (卯の刻)' },
+            { name: '🛁 お風呂場', elementKey: 'water', god: '玄武', luckyGod: '弁財天 (美容健康)', gauge: 0, decreaseRatePerDay: 20, bestStart: 9, bestEnd: 11, bestText: '09:00-11:00 (巳の刻)' },
+            { name: '🧼 洗面所', elementKey: 'water', god: '玄武', luckyGod: '弁財天 (美と金運)', gauge: 0, decreaseRatePerDay: 20, bestStart: 9, bestEnd: 11, bestText: '09:00-11:00 (巳の刻)' },
+            { name: '🚽 トイレ', elementKey: 'water', god: '玄武', luckyGod: '弁財天 (大浄化)', gauge: 0, decreaseRatePerDay: 25, bestStart: 11, bestEnd: 13, bestText: '11:00-13:00 (午の刻)' }
+        ]
+    };
+
+    function init() {
+        renderGodsDashboard();
+        renderAreas();
+        resetInputs();
+        updateDOM();
+        triggerRandomOracle();
+
+        setInterval(() => {
+            appState.areas.forEach(area => {
+                let decreasePerMinute = area.decreaseRatePerDay / 1440;
+                area.gauge = Math.max(0, area.gauge - decreasePerMinute);
+            });
+            updateDOM();
+        }, 60000);
+    }
+
+    function resetInputs() {
+        const d = new Date();
+        document.getElementById('input-date').value = d.toISOString().split('T')[0];
+        document.getElementById('input-time').value = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function renderGodsDashboard() {
+        const container = document.getElementById('gods-grid-container');
+        container.innerHTML = '';
+        Object.keys(MYTH_GODS_DATABASE).forEach(key => {
+            const god = MYTH_GODS_DATABASE[key];
+            container.innerHTML += `
+                <div id="god-card-${key}" class="god-mini-card" onclick="openGodDetail('${key}')">
+                    <span class="god-mini-icon">${god.icon}</span>
+                    <span class="god-mini-name">${god.name}</span>
+                    <span id="god-lv-${key}" class="god-mini-lv">Lv.1</span>
+                </div>
+            `;
+        });
+    }
+
+    function openGodDetail(key) {
+        const god = MYTH_GODS_DATABASE[key];
+        document.getElementById('md-icon').innerText = god.icon;
+        document.getElementById('md-title').innerText = god.name;
+        document.getElementById('md-type').innerText = god.element + " 守護";
+        document.getElementById('md-type').style.backgroundColor = god.color;
+        document.getElementById('md-desc').innerText = god.desc;
+
+        document.getElementById('god-detail-modal').style.display = 'block';
+        document.getElementById('overlay').classList.add('ritual-open');
+    }
+
+    function closeGodDetail() {
+        document.getElementById('god-detail-modal').style.display = 'none';
+        document.getElementById('overlay').classList.remove('ritual-open');
+    }
+
+    function triggerRandomOracle(forcedElementKey = null) {
+        const keys = Object.keys(MYTH_GODS_DATABASE);
+        const chosenKey = forcedElementKey && keys.includes(forcedElementKey) ? forcedElementKey : keys[Math.floor(Math.random() * keys.length)];
+        const god = MYTH_GODS_DATABASE[chosenKey];
+        const randomOracle = god.oracles[Math.floor(Math.random() * god.oracles.length)];
+
+        document.getElementById('oracle-speaker').innerText = `${god.icon} ${god.name}の神託`;
+        document.getElementById('oracle-text').innerText = randomOracle;
+    }
+
+    function renderAreas() {
+        const container = document.getElementById('area-list-container');
+        container.innerHTML = '';
+        appState.areas.forEach((area, index) => {
+            container.innerHTML += `
+                <div class="area-card" onclick="openPanelForCreate(${index})">
+                    <div class="area-header">
+                        <div>
+                            <span class="area-name">${area.name}</span>
+                            <div><div id="god-badge-${index}" class="god-badge">✨ 空間の浄化</div></div>
+                            <div class="area-best-time">🕒 推奨: ${area.bestText}</div>
+                        </div>
+                        <div class="area-stats-right">
+                            <span id="area-cumulative-${index}" class="area-cumulative-text">累計 0分</span>
+                            <span id="area-points-${index}" class="area-points-text">📦 0pt</span>
+                            <span id="gauge-text-${index}" class="area-gauge-text">0%</span>
+                        </div>
+                    </div>
+                    <div class="gauge-container">
+                        <div id="gauge-bar-${index}" class="gauge-bar"></div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function calculateCombo() {
+        if (appState.logs.length === 0) return 0;
+        const dates = [...new Set(appState.logs.map(l => l.date))].sort((a, b) => b.localeCompare(a));
+        const todayStr = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        if (dates[0] !== todayStr && dates[0] !== yesterdayStr) return 0;
+
+        let combo = 1;
+        for (let i = 0; i < dates.length - 1; i++) {
+            const current = new Date(dates[i]); const next = new Date(dates[i+1]);
+            const diffDays = Math.ceil(Math.abs(current - next) / (1000 * 60 * 60 * 24));
+            if (diffDays === 1) combo++; else if (diffDays > 1) break;
+        }
+        return combo;
+    }
+
+    function updateDOM() {
+        document.getElementById('current-month-display').innerText = `${appState.currentYear}年${appState.currentMonth}月`;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const moonBadge = document.getElementById('moon-status-badge');
+        if (MOON_CALENDAR_2026.newMoon.includes(todayStr)) { moonBadge.style.display = 'flex'; moonBadge.innerHTML = '🌑 本日は新月（手放しpt 2倍！）'; }
+        else if (MOON_CALENDAR_2026.fullMoon.includes(todayStr)) { moonBadge.style.display = 'flex'; moonBadge.innerHTML = '🌕 本日は満月（ゲージ回復 2倍！）'; }
+        else { moonBadge.style.display = 'none'; }
+
+        const comboCount = calculateCombo();
+        const comboBadge = document.getElementById('combo-status-badge');
+        if (comboCount > 0) { comboBadge.style.display = 'block'; comboBadge.innerText = `🔥 ${comboCount}日連続調律中！`; }
+        else { comboBadge.style.display = 'none'; }
+
+        let currentMonthMin = 0;
+        let currentMonthItm = 0;
+        const currentTargetPrefix = `${appState.currentYear}-${String(appState.currentMonth).padStart(2, '0')}`;
+
+        appState.logs.forEach(l => {
+            if(l.date.startsWith(currentTargetPrefix)) {
+                currentMonthMin += l.minutes;
+                if(l.itemName) currentMonthItm += 1;
+            }
+        });
+
+        document.getElementById('total-minutes').innerText = currentMonthMin;
+        document.getElementById('total-items').innerText = currentMonthItm;
+        document.getElementById('total-count').innerText = appState.logs.filter(l => l.date.startsWith(currentTargetPrefix)).length;
+
+        let elementMinutesMap = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
+        let activeGodsCount = 0;
+        let awakenedGodsCount = 0;
+
+        appState.areas.forEach((area, index) => {
+            const bar = document.getElementById(`gauge-bar-${index}`);
+            const text = document.getElementById(`gauge-text-${index}`);
+            const gBadge = document.getElementById(`god-badge-${index}`);
+            const cumulativeText = document.getElementById(`area-cumulative-${index}`);
+            const pointsText = document.getElementById(`area-points-${index}`);
+            
+            let areaTotalMinutes = 0;
+            let areaTotalPoints = 0;
+
+            appState.logs.forEach(l => {
+                if(l.area === area.name) {
+                    areaTotalMinutes += l.minutes;
+                    if(l.itemName) areaTotalPoints += l.earnedPoints || 10;
+                }
+            });
+
+            elementMinutesMap[area.elementKey] += areaTotalMinutes;
+            if(cumulativeText) cumulativeText.innerText = `累計 ${areaTotalMinutes}分`;
+            if(pointsText) pointsText.innerText = `📦 ${areaTotalPoints}pt`;
+            
+            if(bar && text) {
+                const displayGauge = Math.floor(area.gauge);
+                bar.style.width = Math.min(100, displayGauge) + '%';
+                text.innerText = displayGauge + '%';
+
+                // 神獣と七福神のテキストを連結
+                const combinedGodsText = `${area.god} × ${area.luckyGod}`;
+
+                if(displayGauge >= 100) {
+                    activeGodsCount++; awakenedGodsCount++;
+                    if(gBadge) { gBadge.className = 'god-badge awakened'; gBadge.innerText = `⚡ 覚醒: ${combinedGodsText}`; }
+                    bar.style.backgroundColor = '#eab308'; text.style.color = '#eab308';
+                } else if(displayGauge > 0) {
+                    activeGodsCount++;
+                    if(gBadge) { gBadge.className = 'god-badge active'; gBadge.innerText = `✨ 守護: ${combinedGodsText}`; }
+                    if(displayGauge > 60) { bar.style.backgroundColor = '#10b981'; text.style.color = '#10b981'; }
+                    else if(displayGauge > 25) { bar.style.backgroundColor = '#f59e0b'; text.style.color = '#f59e0b'; }
+                    else { bar.style.backgroundColor = '#ef4444'; text.style.color = '#ef4444'; }
+                } else {
+                    if(gBadge) { gBadge.className = 'god-badge'; gBadge.innerText = `✨ 守護: ${combinedGodsText}`; }
+                    bar.style.backgroundColor = '#ef4444'; text.style.color = '#ef4444';
+                }
+            }
+        });
+
+        Object.keys(elementMinutesMap).forEach(key => {
+            const mins = elementMinutesMap[key];
+            let lv = 1;
+            if (mins >= 60) lv = 3;
+            else if (mins >= 20) lv = 2;
+
+            const lvBadge = document.getElementById(`god-lv-${key}`);
+            const card = document.getElementById(`god-card-${key}`);
+            if(lvBadge) {
+                lvBadge.innerText = `Lv.${lv}`;
+                if(lv === 3) { lvBadge.style.background = '#eab308'; card.classList.add('active-glow'); }
+                else if(lv === 2) { lvBadge.style.background = '#10b981'; card.classList.add('active-glow'); }
+                else { lvBadge.style.background = '#64748b'; card.classList.remove('active-glow'); }
+            }
+        });
+
+        let normalActiveCount = activeGodsCount - awakenedGodsCount;
+        let comboBonus = comboCount * 0.1;
+        let multiplier = 1.0 + (normalActiveCount * 0.1) + (awakenedGodsCount * 0.2) + comboBonus;
+        
+        document.getElementById('active-gods-count').innerText = activeGodsCount;
+        document.getElementById('fortune-multiplier').innerText = multiplier.toFixed(1);
+
+        renderLogs();
+    }
+
+    function renderLogs() {
+        const container = document.getElementById('log-list-container');
+        container.innerHTML = '';
+        
+        const currentTargetPrefix = `${appState.currentYear}-${String(appState.currentMonth).padStart(2, '0')}`;
+        const filteredLogs = appState.logs.filter(l => l.date.startsWith(currentTargetPrefix));
+        
+        let monthTime = 0;
+        let monthItems = 0;
+
+        filteredLogs.forEach(l => {
+            monthTime += l.minutes;
+            if(l.itemName) monthItems += 1;
+
+            container.innerHTML += `
+                <div class="log-item">
+                    <div>
+                        <strong>${l.area}</strong> (${l.minutes}分)<br>
+                        <span style="font-size:0.75rem; color:var(--text-sub);">${l.date} ${l.time}</span>
+                        ${l.itemName ? `<br><span style="color:var(--accent);">📦 手放し: ${l.itemName} (+${l.earnedPoints}pt)</span>` : ''}
+                    </div>
+                    <div class="log-actions">
+                        <button class="btn-action btn-edit" onclick="openPanelForEdit('${l.id}')">編集</button>
+                        <button class="btn-action btn-delete" onclick="deleteLog('${l.id}')">削除</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('report-month-time').innerText = `${monthTime} 分`;
+        document.getElementById('report-month-items').innerText = `${monthItems} 個`;
+    }
+
+    function openPanelForCreate(areaIndex) {
+        appState.currentSelectedAreaIndex = areaIndex;
+        appState.editingLogId = null;
+        
+        const area = appState.areas[areaIndex];
+        document.getElementById('panel-title').innerText = `${area.name} の調律`;
+        document.getElementById('input-item-name').value = '';
+        
+        refreshTimeUI(3);
+        resetInputs();
+        onDateOrTimeChange();
+
+        document.getElementById('action-panel').classList.add('open');
+        document.getElementById('overlay').classList.add('open');
+    }
+
+    function openPanelForEdit(logId) {
+        const log = appState.logs.find(l => l.id === logId);
+        if(!log) return;
+
+        appState.editingLogId = logId;
+        const areaIndex = appState.areas.findIndex(a => a.name === log.area);
+        appState.currentSelectedAreaIndex = areaIndex;
+
+        document.getElementById('panel-title').innerText = `${log.area} の編集`;
+        document.getElementById('input-date').value = log.date;
+        document.getElementById('input-time').value = log.time;
+        document.getElementById('input-item-name').value = log.itemName || '';
+
+        refreshTimeUI(log.minutes);
+        onDateOrTimeChange();
+        
+        document.getElementById('action-panel').classList.add('open');
+        document.getElementById('overlay').classList.add('open');
+    }
+
+    function closePanel() {
+        document.getElementById('action-panel').classList.remove('open');
+        document.getElementById('overlay').classList.remove('open');
+    }
+
+    function addPresetTime(minutes) {
+        let targetTime = appState.selectedTime + minutes;
+        refreshTimeUI(targetTime);
+    }
+
+    function adjustTime(amount) {
+        let targetTime = appState.selectedTime + amount;
+        if (targetTime < 0) targetTime = 0;
+        refreshTimeUI(targetTime);
+    }
+
+    function resetTimeCounter() {
+        refreshTimeUI(0);
+    }
+
+    function refreshTimeUI(minutes) {
+        appState.selectedTime = minutes;
+        document.getElementById('current-time-counter').innerText = `${minutes} 分`;
+    }
+
+    function onDateOrTimeChange() {
+        if(appState.currentSelectedAreaIndex === null) return;
+        const area = appState.areas[appState.currentSelectedAreaIndex];
+        
+        const dateInput = document.getElementById('input-date').value;
+        const timeInput = document.getElementById('input-time').value;
+        
+        let isSync = false;
+        if(timeInput) {
+            const hour = parseInt(timeInput.split(':')[0]);
+            if(hour >= area.bestStart && hour < area.bestEnd) isSync = true;
+        }
+        document.getElementById('sync-notice-box').style.display = isSync ? 'block' : 'none';
+
+        let isMoon = false;
+        if(dateInput && (MOON_CALENDAR_2026.newMoon.includes(dateInput) || MOON_CALENDAR_2026.fullMoon.includes(dateInput))) {
+            isMoon = true;
+        }
+        document.getElementById('moon-bonus-box').style.display = isMoon ? 'block' : 'none';
+    }
+
+    function submitLog() {
+        if(appState.selectedTime <= 0) { alert('調律時間を1分以上に設定してください'); return; }
+        
+        const date = document.getElementById('input-date').value;
+        const time = document.getElementById('input-time').value;
+        const itemName = document.getElementById('input-item-name').value.trim();
+        
+        if(!date || !time) { alert('日付と時刻を入力してください'); return; }
+
+        const area = appState.areas[appState.currentSelectedAreaIndex];
+        
+        let earnedPoints = 0;
+        if(itemName) {
+            earnedPoints = 10;
+            if(MOON_CALENDAR_2026.newMoon.includes(date)) earnedPoints *= 2;
+        }
+
+        if(appState.editingLogId) {
+            const logIndex = appState.logs.findIndex(l => l.id === appState.editingLogId);
+            if(logIndex !== -1) {
+                const oldLog = appState.logs[logIndex];
+                area.gauge = Math.max(0, area.gauge - (oldLog.minutes * 10));
+
+                appState.logs[logIndex] = {
+                    id: appState.editingLogId,
+                    area: area.name, date, time, minutes: appState.selectedTime, itemName, earnedPoints
+                };
+            }
+        } else {
+            const newLog = {
+                id: 'log_' + Date.now(),
+                area: area.name, date, time, minutes: appState.selectedTime, itemName, earnedPoints
+            };
+            appState.logs.push(newLog);
+        }
+
+        let gaugeIncrease = appState.selectedTime * 10;
+        if(MOON_CALENDAR_2026.fullMoon.includes(date)) gaugeIncrease *= 2;
+        
+        area.gauge = area.gauge + gaugeIncrease; 
+
+        triggerRandomOracle(area.elementKey);
+        closePanel();
+        updateDOM();
+    }
+
+    function deleteLog(logId) {
+        if(!confirm('この調律データを削除しますか？')) return;
+        const log = appState.logs.find(l => l.id === logId);
+        if(log) {
+            const area = appState.areas.find(a => a.name === log.area);
+            if(area) {
+                area.gauge = Math.max(0, area.gauge - (log.minutes * 10));
+            }
+            appState.logs = appState.logs.filter(l => l.id !== logId);
+            updateDOM();
+        }
+    }
+
+    function changeMonth(offset) {
+        appState.currentMonth += offset;
+        if(appState.currentMonth > 12) {
+            appState.currentMonth = 1; appState.currentYear += 1;
+        } else if(appState.currentMonth < 1) {
+            appState.currentMonth = 12; appState.currentYear -= 1;
+        }
+        updateDOM();
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
